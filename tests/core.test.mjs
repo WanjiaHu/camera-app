@@ -1,0 +1,11 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { DEFAULT_PARAMS, blendParams, recommendAdjustments, parseCube } from '../core.js';
+const cube=`TITLE "Identity"\nLUT_3D_SIZE 2\nDOMAIN_MIN 0 0 0\nDOMAIN_MAX 1 1 1\n0 0 0\n1 0 0\n0 1 0\n1 1 0\n0 0 1\n1 0 1\n0 1 1\n1 1 1`;
+test('standard .cube preserves ordering and domain',()=>{const lut=parseCube(cube);assert.equal(lut.size,2);assert.equal(lut.name,'Identity');assert.deepEqual(lut.values.slice(3,6),[1,0,0]);assert.deepEqual(lut.domainMax,[1,1,1]);});
+test('incomplete and invalid LUTs fail without producing partial state',()=>{assert.throws(()=>parseCube(cube.replace('1 1 1\n','')));assert.throws(()=>parseCube(cube+'\nNaN 0 0'));assert.throws(()=>parseCube(cube.replace('DOMAIN_MAX 1 1 1','DOMAIN_MAX 0 1 1')));assert.throws(()=>parseCube('LUT_1D_SIZE 32'));});
+test('BOM, comments and CRLF are supported',()=>{const lut=parseCube('\uFEFF# example\r\n'+cube.replaceAll('\n','\r\n')+'\r\n# end');assert.equal(lut.values.length,24);});
+test('recipe strength has a genuinely neutral zero and is clamped',()=>{const params={...DEFAULT_PARAMS,exposure:1,contrast:20,saturation:-100};assert.deepEqual(blendParams(params,0),DEFAULT_PARAMS);assert.equal(blendParams(params,50).exposure,.5);assert.equal(blendParams(params,100).saturation,-100);assert.equal(blendParams(params,150).contrast,20);});
+test('AI adjustments respect locks and do not mutate input',()=>{const params={...DEFAULT_PARAMS,contrast:10};const result=recommendAdjustments(params,['contrast'],'soft');assert.equal(result.some(c=>c.key==='contrast'),false);assert.equal(params.contrast,10);assert.equal(result.find(c=>c.key==='highlights').before,0);});
+test('all locked suggestions yield an empty safe result',()=>{assert.deepEqual(recommendAdjustments(DEFAULT_PARAMS,['contrast','highlights','shadows'],'soft'),[]);});
+test('AI explanations match the actual direction of adjustment',()=>{const changes=recommendAdjustments({...DEFAULT_PARAMS,contrast:30},[],'clear');assert.match(changes.find(x=>x.key==='contrast').reason,/减弱/);const atTarget=recommendAdjustments({...DEFAULT_PARAMS,contrast:8,saturation:6},[],'clear');assert.equal(atTarget.length,0);});

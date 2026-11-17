@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#111613"><meta name="description" content="Black PIC 相机手机 App 交互演示">
+  <title>Black PIC v2 · 相机</title><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%23111613'/%3E%3Ccircle cx='32' cy='32' r='17' fill='none' stroke='%23d6e7b5' stroke-width='5'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="interactions.css"><link rel="stylesheet" href="controls.css"><link rel="stylesheet" href="v2.css">
+</head><body>
+<svg class="svg-defs" aria-hidden="true"><defs>
+    <symbol id="i-camera" viewBox="0 0 24 24"><path d="M8 6l1.5-2h5L16 6h3a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z"/><circle cx="12" cy="13" r="4"/></symbol>
+    <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 7h6m4 0h6M4 17h10m4 0h2"/><circle cx="12" cy="7" r="2"/><circle cx="16" cy="17" r="2"/></symbol>
+    <symbol id="i-recipes" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></symbol>
+    <symbol id="i-gallery" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8" cy="8" r="1.5"/><path d="M3 17l6-6 4 4 3-3 5 5"/></symbol>
+    <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l2.7 6.3L21 12l-6.3 2.7L12 21l-2.7-6.3L3 12l6.3-2.7zM20 2v4m-2-2h4"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+    <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V3m-5 5l5-5 5 5M4 15v5h16v-5"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v13m-5-5l5 5 5-5M4 16v5h16v-5"/></symbol>
+    <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18m6-18v18M3 9h18M3 15h18"/></symbol>
+    <symbol id="i-flip" viewBox="0 0 24 24"><path d="M20 9a8 8 0 0 0-14-4L3 8m0-5v5h5M4 15a8 8 0 0 0 14 4l3-3m0 5v-5h-5"/></symbol>
+    <symbol id="i-compare" viewBox="0 0 24 24"><path d="M12 2v20M9 5H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h4m6-14h4a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-4"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12l4 4L19 6"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-10v1"/></symbol>
+    <symbol id="i-heart" viewBox="0 0 24 24"><path d="M20.5 4.8a5.5 5.5 0 0 0-7.8 0l-.7.7-.7-.7a5.5 5.5 0 0 0-7.8 7.8L12 21l8.5-8.4a5.5 5.5 0 0 0 0-7.8z"/></symbol>
+    <symbol id="i-live" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="10" stroke-dasharray="2 3"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></symbol>
+    <symbol id="i-save" viewBox="0 0 24 24"><path d="M5 3h12l4 4v14H3V3zM7 3v6h10V3M7 21v-8h10v8"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 4l12 8-12 8z"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7m4-7v7"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M14 5l-7 7 7 7"/></symbol>
+<symbol id="i-more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></symbol>
+<symbol id="i-contrast" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor" stroke="none"/></symbol>
+<symbol id="i-drop" viewBox="0 0 24 24"><path d="M12 3s-6 7-6 11a6 6 0 0 0 12 0c0-4-6-11-6-11z"/></symbol>
+<symbol id="i-warm" viewBox="0 0 24 24"><path d="M9 14V5a3 3 0 0 1 6 0v9a5 5 0 1 1-6 0zM12 7v10"/></symbol>
+<symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14a8 8 0 0 1-10-10 8 8 0 1 0 10 10z"/></symbol>
+<symbol id="i-grain" viewBox="0 0 24 24"><path d="M5 5h.01M12 4h.01M19 6h.01M8 11h.01M15 12h.01M4 17h.01M11 19h.01M20 18h.01" stroke-width="3"/></symbol>
+<symbol id="i-fade" viewBox="0 0 24 24"><path d="M5 7h14M5 12h14M5 17h14" stroke-dasharray="2 2"/></symbol><symbol id="i-cube" viewBox="0 0 24 24"><path d="M12 3l9 5v9l-9 5-9-5V8zM3 8l9 5 9-5M12 13v9M7.5 5.5l9 5v9"/></symbol>
+<symbol id="i-iso" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M7 14l3-4 4 4 3-4"/></symbol>
+<symbol id="i-shutter" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3l5 9-5 9M4 7h10M4 17l5-9m1 13l-5-9m15 5H10m10-10l-5 9"/></symbol>
+<symbol id="i-focus" viewBox="0 0 24 24"><path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5"/><circle cx="12" cy="12" r="4"/></symbol></defs></svg>
+  <div class="phone-frame" aria-label="Black PIC 手机 App 演示">
+    <div class="phone-screen" data-view="camera">
+      <div class="status-bar" aria-hidden="true"><span>9:41</span><i class="dynamic-island"></i><span class="status-icons"><svg viewBox="0 0 38 16"><path d="M1 12V10M5 12V7M9 12V4M13 12V1" stroke-width="2.5"/><path d="M19 5q7-6 14 0m-11 3q4-4 8 0m-5 3q1-1 2 0"/></svg><span class="battery"></span></span></div>
+      <header class="camera-toolbar"><div class="camera-header-start"><button class="icon-button" id="about-button" aria-label="更多选项"><svg><use href="#i-more"/></svg></button><button class="icon-button" id="inspiration-button" data-view="inspiration" aria-label="打开灵感库" title="个人灵感库"><svg><use href="#i-heart"/></svg><span>灵感</span></button></div><a class="brand" href="#camera" aria-label="Black PIC 相机首页">Black PIC<span>CAMERA</span></a><div class="camera-header-actions"><button class="adjust-entry" id="adjust-toggle" aria-label="打开调节" aria-expanded="false" aria-controls="inspector"><svg><use href="#i-sliders"/></svg><span>调节</span></button></div></header>
+      <header class="page-header"><button class="icon-button" data-view="camera" aria-label="返回拍摄"><svg><use href="#i-back"/></svg></button><h1 id="page-title">配方库</h1><span id="header-count"></span><div class="inspiration-header-actions"><button id="inspiration-manage" class="text-button" hidden>选择</button><button class="icon-button" id="inspiration-upload" aria-label="添加灵感图片"><svg><use href="#i-plus"/></svg></button></div></header>
+      <main class="main">
+        <section id="camera-view" class="view active" aria-label="相机">
+          <div class="viewfinder" id="viewfinder">
+            <canvas id="preview" width="900" height="1200" aria-label="相机取景画面，点击选择对焦位置"></canvas><div class="view-shade"></div>
+            <button id="live-toggle" class="live-toggle" aria-label="Live 动态照片" aria-pressed="false" title="开启 Live"><svg><use href="#i-live"/><path class="live-slash" d="M4 4l16 16"/></svg></button>
+            <div class="grid-overlay" id="grid-overlay" hidden><i></i><i></i><i></i><i></i></div>
+            <div class="recording-badge" id="recording-badge" hidden><i></i><span>00:00</span></div><span class="original-badge" id="original-badge" hidden>应用前</span><div class="focus-ring" id="focus-ring" hidden></div>
+            <button id="ai-help" class="ai-help" aria-label="AI 拍摄辅助"><svg><use href="#i-spark"/></svg><span>AI</span></button>
+            <button id="compare-button" class="compare-toggle" aria-label="切换应用前后" aria-pressed="false"><svg><use href="#i-compare"/></svg><span>对比</span></button>
+            <div class="zoom-controls"><button id="zoom-button" aria-label="变焦，长按打开轮盘" aria-expanded="false" aria-controls="zoom-popover" title="长按打开变焦轮盘"><span>1×</span><i></i></button>
+              <div id="zoom-popover" class="zoom-popover" hidden><div id="zoom-dial" class="zoom-dial" role="slider" aria-label="变焦轮盘" aria-valuemin="1" aria-valuemax="5" aria-valuenow="1" tabindex="0"><svg viewBox="0 0 200 120" aria-hidden="true"><path class="zoom-arc" d="M 18.21 73.42 A 86 86 0 0 1 181.79 73.42"/><g id="zoom-ticks"></g><g id="zoom-needle"><path d="M 0 -91 L -2.5 -96 L 2.5 -96 Z"/><line y1="-85" y2="-73"/></g></svg></div></div>
+            </div>
+            <div id="ai-flow" class="ai-flow" hidden>
+              <div class="ai-flow-header"><button id="ai-change-reference" class="assist-source" hidden><img id="ai-source-image" alt=""><span id="ai-source-name"></span><svg><use href="#i-chevron"/></svg></button><button id="ai-cancel" class="flow-icon" aria-label="取消这次效果"><svg><use href="#i-close"/></svg></button></div>
+              <div id="ai-framing-guide" class="ai-framing-guide" aria-hidden="true" hidden><i></i><i></i><i></i><i></i></div>
+              <section id="ai-assist" class="ai-assist"><div class="ai-assist-heading"><span class="ai-assist-label"><svg><use href="#i-spark"/></svg><span id="ai-stage-label">场景</span></span><button id="ai-back" class="ai-step-back" hidden>调整构图</button></div><div class="ai-assist-content"><p id="ai-status" role="status" aria-live="polite"></p><button id="ai-next" class="ai-step-next" hidden>看滤镜 <svg><use href="#i-chevron"/></svg></button></div><div id="ai-filter-options" class="ai-filter-options" role="group" aria-label="选择滤镜" hidden></div><div id="ai-result-actions" class="ai-result-actions" hidden><button id="ai-more-filters" class="ai-step-back" aria-expanded="false" aria-controls="ai-filter-options">换个效果</button><span id="ai-ready-hint" class="ai-ready-hint">按快门拍摄</span></div></section>
+            </div>
+            <aside class="pro-editor" id="inspector" aria-label="配方与参数调节" aria-hidden="true" data-panel="recipes" inert>
+              <div id="editor-session" class="editor-session" hidden><button id="edit-cancel" aria-label="取消配方编辑" hidden><svg><use href="#i-close"/></svg></button><button id="reset-adjust" type="button" aria-label="复原本次调整" title="复原本次调整">复原</button><span id="edit-title"></span><button id="edit-save">存为配方</button></div>
+              <div class="recipe-summary" id="recipe-summary"><span id="recipe-summary-label">基础配方</span><button id="style-info" aria-label="查看当前风格的灵感来源"><span id="current-style-name">文艺复兴</span><svg><use href="#i-info"/></svg></button><button class="all-recipes" data-view="recipes" aria-label="查看全部配方">全部 <svg><use href="#i-chevron"/></svg></button></div>
+              <div class="intensity-control" id="recipe-intensity" hidden><label for="intensity">强度</label><input id="intensity" type="range" min="0" max="100" value="80" aria-label="配方强度"><output id="intensity-value">80%</output></div>
+              <div class="editor-row">
+                <button id="recipe-tool" class="editor-anchor" data-editor-tool="recipes" aria-label="选择配方"><svg><use href="#i-recipes"/></svg><small>配方</small></button>
+                <div class="editor-content"><div class="parameter-scroll" id="parameter-scroll" role="group" aria-label="全部可调参数，可左右滑动"></div><div id="panel-recipes" class="panel" hidden><div class="recipe-grid" id="recipe-grid"></div></div><div id="panel-adjust" class="panel" hidden></div></div>
+                
+              </div>
+            </aside>
+            <div id="capture-flash" class="capture-flash"></div>
+          </div>
+          <div class="capture-console">
+            <div class="media-modes" role="group" aria-label="拍摄形式"><button data-mode="video">视频</button><button data-mode="photo" class="active">照片</button></div>
+            <div class="shutter-row"><button class="last-shot" id="last-shot" aria-label="打开作品集"><svg><use href="#i-gallery"/></svg></button><button id="shutter" class="shutter" aria-label="拍摄照片"><span></span></button><button id="flip-camera" class="flip-camera" aria-label="切换摄像头或示例画面"><svg><use href="#i-flip"/></svg></button></div>
+          </div>
+
+        </section>
+        <section id="inspiration-view" class="view" aria-label="个人灵感库" hidden><p class="inspiration-intro" id="inspiration-intro">选一张，带到这次拍摄。</p><div class="inspiration-grid" id="inspiration-grid"></div><div class="inspiration-footer" hidden><p id="inspiration-storage" role="status"></p><button id="inspiration-return" class="button subtle">先用初始滤镜</button><button id="inspiration-delete" class="button subtle" hidden disabled>删除</button></div></section>
+        <section id="recipes-view" class="view" aria-label="配方库" hidden><div class="library-toolbar"><div class="library-filters"><button data-library="all" class="active">全部</button><button data-library="mine">自定</button><button data-library="favorites">收藏</button></div><button class="icon-button" id="library-save" aria-label="保存当前配方"><svg><use href="#i-plus"/></svg></button></div><div class="library-grid" id="library-grid"></div></section>
+        <section id="gallery-view" class="view" aria-label="作品集" hidden><div class="gallery-top"><span id="gallery-summary">暂无作品</span></div><div class="gallery-grid" id="gallery-grid"></div></section>
+      </main>
+
+      <div class="home-indicator" aria-hidden="true"></div><div id="toast" class="toast" role="status" aria-live="polite"></div>
+      <dialog id="save-dialog" class="modal"><form id="save-form"><div class="dialog-heading"><h2 id="save-title">保存配方</h2><button type="button" class="icon-button" data-close="save-dialog" aria-label="关闭"><svg><use href="#i-close"/></svg></button></div><div class="save-preview"><img id="save-thumbnail" alt="当前配方预览"><div><span id="save-base-name"></span><small id="save-settings-summary"></small></div></div><label class="field-label" for="recipe-name">名称</label><input id="recipe-name" name="name" maxlength="24" placeholder="给配方起个名字" required autocomplete="off"><details class="optional-note"><summary>添加备注</summary><textarea id="recipe-note" aria-label="配方备注" maxlength="120" rows="2" placeholder="适用场景或使用心得"></textarea></details><label class="checkbox-label"><input type="checkbox" id="save-capture-settings">包含专业参数</label><label class="checkbox-label" id="save-copy-option" hidden><input type="checkbox" id="save-copy">另存为新配方</label><div class="dialog-actions"><button type="button" class="button subtle" data-close="save-dialog">取消</button><button type="submit" id="save-submit" class="button primary">保存</button></div></form></dialog>
+      <dialog id="media-dialog" class="modal media-modal"><div id="media-detail"></div></dialog>
+      <dialog id="about-dialog" class="modal options-modal">
+        <div class="dialog-heading"><h2>相机设置</h2><button class="icon-button" data-close="about-dialog" aria-label="关闭"><svg><use href="#i-close"/></svg></button></div>
+        <button class="option-row" id="connect-camera" aria-label="连接或断开相机"><svg><use href="#i-camera"/></svg><span>使用摄像头</span><svg><use href="#i-chevron"/></svg></button>
+        <div class="more-camera-tools"><button id="aspect-button" class="camera-tool" aria-label="切换画幅比例">全屏</button><button id="grid-button" class="camera-tool" aria-label="显示构图网格" aria-pressed="false"><svg><use href="#i-grid"/></svg></button></div>
+        <section class="demo-library-settings" aria-labelledby="demo-library-title">
+          <h3 id="demo-library-title">演示起点</h3>
+          <div class="demo-library-options" role="group" aria-label="切换灵感库演示状态"><button id="demo-library-empty" aria-pressed="true">空灵感库</button><button id="demo-library-sample" aria-pressed="false">已有图片</button></div>
+          <p>切换后打开灵感库，已上传的图片和作品会保留。</p>
+        </section>
+      </dialog>
+      <dialog id="style-dialog" class="modal"><div class="dialog-heading"><h2 id="style-title"></h2><button class="icon-button" data-close="style-dialog" aria-label="关闭配方说明"><svg><use href="#i-close"/></svg></button></div><p id="style-origin" class="style-origin"></p><p id="style-description" class="style-description"></p><p id="style-guidance" class="style-guidance"></p><p class="style-boundary">这是一组摄影表达的起点，现场光线与取景同样重要。</p></dialog>
+      <input type="file" id="inspiration-input" accept="image/*" multiple hidden>
+      <input type="file" id="media-input" accept="image/*,video/*" hidden><input type="file" id="lut-input" accept=".cube" hidden><video id="source-video" playsinline muted hidden></video>
+    </div>
+  </div>
+  <script type="module" src="app.js"></script>
+</body></html>

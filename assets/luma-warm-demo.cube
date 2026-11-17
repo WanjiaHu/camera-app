@@ -1,0 +1,13 @@
+# A tiny warm look for testing the LUT import interaction.
+TITLE "LUMA Warm Demo"
+LUT_3D_SIZE 2
+DOMAIN_MIN 0 0 0
+DOMAIN_MAX 1 1 1
+0.025 0.012 0.0
+1.0 0.012 0.0
+0.025 0.99 0.0
+1.0 0.99 0.0
+0.025 0.012 0.94
+1.0 0.012 0.94
+0.025 0.99 0.94
+1.0 0.99 0.94

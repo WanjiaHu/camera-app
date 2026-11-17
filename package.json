@@ -1,0 +1,14 @@
+{
+  "name": "black-pic-v2",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Black PIC v2 — original phone UI with personal inspiration interactions",
+  "scripts": {
+    "dev": "node server.mjs",
+    "check": "node --check app.js && node --check core.js && node --check experience-model.js && node --check personal-style.js && node --check camera-interactions.js && node --check interaction-core.js && node --check renderer.js && node --check server.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "test:browser": "node tests/ai-flow.browser.mjs && node tests/personal-journey.browser.mjs && node tests/inspiration-entry.browser.mjs"
+  },
+  "engines": { "node": ">=18" }
+}
