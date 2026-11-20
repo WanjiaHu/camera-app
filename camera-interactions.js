@@ -1,82 +1,27 @@
-import {clampZoom, zoomFromDrag, captureLook, candidateLook} from './interaction-core.js';
-export function createAIFlow({root, getState, getRecommendation, thumbnail, canStart, onStart, onPreview, onRestore, onCommit, onChange, onPickReference}) {
-  const $=selector=>root.querySelector(selector);
-  let active=false,phase='idle',before=null,showingBefore=false,chosen=null,recommendation=null,phaseTimer=null,alternatives=false;
-  const sceneText=()=>({sea:'识别到海边场景',street:'识别到街景场景',unknown:'当前画面暂未识别'})[recommendation.scene]||'当前画面暂未识别';
-  function framingLook(){
-    const framing=recommendation.framing?.[recommendation.composition];
-    return {...before,params:{...before.params},composition:recommendation.composition,zoom:framing?.zoom??before.zoom,pan:framing?.pan??before.pan,panY:framing?.panY??before.panY??0};
-  }
-  function update(){
-    root.hidden=!active;root.parentElement.dataset.aiPhase=active?phase:'idle';
-    root.dataset.phase=active?phase:'idle';root.dataset.before=String(showingBefore);
-    if(active){
-      $('#ai-stage-label').textContent={scene:'场景',composition:'构图',filters:'滤镜'}[phase];
-      $('#ai-status').textContent=phase==='scene'?sceneText():phase==='filters'?`${chosen?.name||recommendation.looks[0].name} · 已应用`:recommendation.site.guidance[recommendation.composition];
-      $('#ai-framing-guide').hidden=phase!=='composition';
-      $('#ai-next').hidden=phase!=='composition';$('#ai-back').hidden=phase!=='filters';
-      $('#ai-filter-options').hidden=phase!=='filters'||!alternatives;$('#ai-result-actions').hidden=phase!=='filters';
-      $('#ai-more-filters').textContent=alternatives?'收起效果':'换个效果';$('#ai-more-filters').setAttribute('aria-expanded',String(phase==='filters'&&alternatives));
-      $('#ai-source-name').textContent=recommendation.source?'参考 · '+recommendation.source.name:'选择灵感';
-      $('#ai-change-reference').hidden=phase==='scene';
-      const image=$('#ai-source-image');image.hidden=!recommendation.source;
-      if(recommendation.source)image.src=recommendation.source.image;else image.removeAttribute('src');
-      root.querySelectorAll('[data-ai-filter]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.aiFilter===chosen?.id)));
+import {clampZoom, zoomFromDrag} from './interaction-core.js';
+
+export function createAIFlow(root, stepDuration=650) {
+  const status=root.querySelector('#ai-status');
+  const wait=()=>new Promise(resolve=>setTimeout(resolve,stepDuration));
+
+  return async ({identify,match,apply})=>{
+    root.hidden=false;
+    try{
+      for(const [phase,label,run] of [
+        ['scene','识别场景',identify],
+        ['preference','匹配偏好',match],
+        ['apply','套用',apply]
+      ]){
+        root.dataset.phase=phase;
+        status.textContent=label;
+        // Keep each status visible while the local work runs.
+        await Promise.all([wait(),Promise.resolve().then(run)]);
+      }
+    }finally{
+      root.hidden=true;
+      root.dataset.phase='idle';
     }
-    onChange();
-  }
-  function showComposition({automatic=false}={}){
-    if(!active)return;clearTimeout(phaseTimer);phase='composition';showingBefore=false;alternatives=false;
-    onPreview(framingLook());update();
-    if(automatic)phaseTimer=setTimeout(showFilters,2600);
-  }
-  function choose(id){
-    const look=recommendation.looks.find(r=>r.id===id);if(!active||phase!=='filters'||!look)return;
-    chosen=look;showingBefore=false;
-    onPreview({...candidateLook(framingLook(),look,[...getState().locked]),planName:look.name});update();
-  }
-  function renderFilters(){
-    const area=$('#ai-filter-options');area.replaceChildren();
-    for(const look of recommendation.looks){
-      const b=document.createElement('button');b.className='ai-filter-choice';b.dataset.aiFilter=look.id;
-      const name=look.name;
-      b.setAttribute('aria-label','使用'+name);b.setAttribute('aria-pressed',String(chosen?.id===look.id));
-      const img=document.createElement('img');img.src=thumbnail(look);img.alt='';
-      const label=document.createElement('span');label.textContent=name;b.append(img,label);area.append(b);
-    }
-  }
-  function showFilters(){
-    if(!active)return;clearTimeout(phaseTimer);phase='filters';alternatives=false;
-    choose(chosen?.id||recommendation.looks[0].id);renderFilters();update();
-  }
-  function exit(keep=false){
-    if(!active)return;clearTimeout(phaseTimer);phaseTimer=null;
-    const previousPhase=phase;active=false;showingBefore=false;
-    if(keep&&previousPhase==='filters'&&chosen)onCommit(before,{composition:recommendation.composition,recommendation:{...recommendation,recipe:chosen.id,planName:chosen.name,direction:chosen.direction,intent:chosen.intent}});
-    else if(keep&&previousPhase==='composition')onCommit(before,{composition:recommendation.composition,recommendation:null});
-    else onRestore(before);
-    chosen=null;phase='idle';update();
-    if(root.contains(document.activeElement))document.querySelector('#ai-help').focus({preventScroll:true});
-  }
-  function start(input={}){
-    if(!canStart())return;if(active)exit(false);
-    onStart();before=captureLook(getState());recommendation=getRecommendation(input);
-    chosen=null;active=true;showingBefore=false;alternatives=false;
-    if(input.resume){showFilters();return;}
-    phase='scene';update();
-    // A paced presentation of the preset scene result, not a remote analysis request.
-    phaseTimer=setTimeout(()=>showComposition({automatic:true}),1300);
-  }
-  root.addEventListener('click',event=>{
-    const b=event.target.closest('button');if(!b)return;
-    if(b.id==='ai-change-reference')onPickReference();
-    if(b.id==='ai-cancel')exit(false);
-    if(b.id==='ai-next')showFilters();
-    if(b.id==='ai-back')showComposition();
-    if(b.id==='ai-more-filters'){alternatives=!alternatives;update();}
-    if(b.dataset.aiFilter)choose(b.dataset.aiFilter);
-  });
-  return {start,exit,pick(){return false;},layout(){},get canCompare(){return active&&phase!=='scene';},get isComparing(){return showingBefore;},toggleComparison(){if(active&&phase!=='scene'){clearTimeout(phaseTimer);showingBefore=!showingBefore;update();}},showAfter(){if(showingBefore){showingBefore=false;update();}},get active(){return active;},get phase(){return phase;},get comparison(){return active&&showingBefore?before:null;},destroy(){exit(false);}};
+  };
 }
 
 export function createZoomDial({button, popover, dial, getValue, setValue, canChange, onOpen, onClose}) {
@@ -155,19 +100,40 @@ export function enableDragScroll(element){
  element.addEventListener('click',event=>{if(suppressClick){event.preventDefault();event.stopImmediatePropagation();suppressClick=false;}},true);
 }
 
-// A long press edits; horizontal movement remains a scroll gesture.
-export function enableRecipeEditing(element,onEdit){
- let press=null,timer=null,suppressClick=false;
- const clear=()=>{clearTimeout(timer);timer=null;press=null;};
+// Long presses, context menus and the keyboard share the same card action.
+export function enableCardLongPress(element,selector,onActivate,enabled=()=>true){
+ let press,timer,suppressClick=false;
+ const clear=()=>{clearTimeout(timer);press=null;};
+ const activate=card=>{clear();suppressClick=true;onActivate(card);};
  element.addEventListener('pointerdown',event=>{
-  const card=event.target.closest('[data-recipe],[data-draft]');if(!card||event.button!==0)return;
-  clear();suppressClick=false;press={id:event.pointerId,x:event.clientX,y:event.clientY,card};
-  timer=setTimeout(()=>{if(!press)return;suppressClick=true;const target=press.card;clear();onEdit(target.dataset.recipe||'draft');},500);
+  clear();suppressClick=false;
+  const card=event.target.closest(selector);
+  if(!card||event.button!==0||!event.isPrimary||!enabled())return;
+  press={x:event.clientX,y:event.clientY,id:event.pointerId};
+  timer=setTimeout(()=>{if(press&&card.isConnected&&enabled())activate(card);},500);
  });
- element.addEventListener('pointermove',event=>{if(press&&(Math.abs(event.clientX-press.x)>7||Math.abs(event.clientY-press.y)>7))clear();});
- element.addEventListener('pointerup',clear);element.addEventListener('pointercancel',clear);element.addEventListener('pointerleave',clear);
- element.addEventListener('click',event=>{if(suppressClick){event.preventDefault();event.stopImmediatePropagation();suppressClick=false;}},true);
- element.addEventListener('contextmenu',event=>{const card=event.target.closest('[data-recipe],[data-draft]');if(card){event.preventDefault();clear();if(!suppressClick)onEdit(card.dataset.recipe||'draft');}});
- element.addEventListener('keydown',event=>{const card=event.target.closest('[data-recipe],[data-draft]');if(card&&(event.key==='ContextMenu'||event.key==='F10'&&event.shiftKey)){event.preventDefault();onEdit(card.dataset.recipe||'draft');}});
- element.addEventListener('dragstart',event=>event.preventDefault());
+ element.addEventListener('pointermove',event=>{
+  if(press&&event.pointerId===press.id&&(Math.abs(event.clientX-press.x)>7||Math.abs(event.clientY-press.y)>7))clear();
+ });
+ ['pointerup','pointercancel','pointerleave'].forEach(name=>element.addEventListener(name,clear));
+ element.addEventListener('click',event=>{
+  if(!suppressClick||event.detail===0)return;
+  event.preventDefault();event.stopImmediatePropagation();suppressClick=false;
+ },true);
+ element.addEventListener('contextmenu',event=>{
+  const card=event.target.closest(selector);if(!card)return;
+  event.preventDefault();
+  if(!suppressClick&&enabled())activate(card);
+ });
+ element.addEventListener('keydown',event=>{
+  const card=event.target.closest(selector);
+  if(card&&enabled()&&(event.key==='ContextMenu'||event.key==='F10'&&event.shiftKey)){
+   event.preventDefault();clear();onActivate(card);
+  }
+ });
+ element.addEventListener('dragstart',event=>{if(event.target.closest(selector))event.preventDefault();});
+}
+
+export function enableRecipeEditing(element,onEdit,canEdit=()=>true){
+ return enableCardLongPress(element,'[data-recipe],[data-draft]',card=>onEdit(card.dataset.recipe||'draft'),canEdit);
 }

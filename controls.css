@@ -1,5 +1,5 @@
 /* One compact editor sits directly above the capture modes. */
-.camera-toolbar{display:grid;grid-template-columns:90px 1fr 90px;padding:0 14px}
+.camera-toolbar{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);padding:0 14px}
 .camera-toolbar>.icon-button{justify-self:start}
 .brand{margin-left:0;justify-self:center;letter-spacing:1.2px;white-space:nowrap}
 .camera-header-actions{display:flex;align-items:center;justify-content:flex-end}
@@ -21,8 +21,6 @@
 .adjust-toggle{position:absolute;right:30px;top:7px;bottom:auto;z-index:11;width:34px;height:34px;display:grid;place-items:center;border:1px solid #e0ecc935;border-radius:50%;background:#13251a66;backdrop-filter:blur(10px);color:#e0eace}
 .adjust-toggle svg{width:17px;height:17px}
 .adjust-toggle[aria-expanded=true]{background:var(--accent);border-color:var(--accent);color:#293921}
-.viewfinder[data-ai-phase]:not([data-ai-phase=idle]) .adjust-toggle,
-.viewfinder[data-ai-phase]:not([data-ai-phase=idle]) .live-toggle,
 .viewfinder[data-zoom-open=true] .adjust-toggle{visibility:hidden;pointer-events:none}
 .compare-toggle{position:absolute;right:15px;bottom:var(--controls-bottom);z-index:11;width:34px;height:34px;display:grid;place-items:center;border:1px solid #e0ecc935;border-radius:50%;color:#dce7cd;background:#13251a66;backdrop-filter:blur(10px)}
 .compare-toggle svg{width:17px;height:17px}
@@ -111,9 +109,3 @@
 .draft-card .recipe-title{color:var(--accent)}
 .draft-dot{position:absolute;right:3px;top:3px;width:5px;height:5px;border-radius:50%;background:var(--accent)}
 .draft-card .recipe-image{border-style:dashed;border-color:#d6e7b580}
-.ai-param-change{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;flex:1;min-width:0;height:61px;border:1px solid #d6e7b529;border-radius:7px;background:#d6e7b50c}
-.ai-param-change>span{font-size:9px;color:#c4d4b4}
-.ai-param-change>small{font:8px var(--mono);color:#8fa57d}
-.ai-param-change>strong{font:14px var(--mono);font-weight:500;color:var(--accent)}
-.ai-flow[data-pro=true] .ai-filter-options{gap:6px}
-.ai-flow[data-pro=true] .ai-filter-heading{margin-bottom:7px}

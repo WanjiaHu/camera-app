@@ -18,7 +18,7 @@ export const PRESETS = [
  {id:'film',name:'印象派',en:'IMPRESSIONISM',description:'关注自然光的变化，以及冷暖色彩之间的关系。',origin:'印象派 · 莫奈的户外光色研究',guidance:'寻找水面反光、树影或冷暖呼应，保留现场的空气感。',composition:'wide',params:{...DEFAULT_PARAMS,exposure:.1,contrast:-9,saturation:6,warmth:13,highlights:-22,shadows:12,fade:7,grain:3},css:'sepia(.12) saturate(1.08) contrast(.92) brightness(1.05)'},
  {id:'forest',name:'巴洛克',en:'BAROQUE',description:'让明暗关系突出主体，保留暗部中的必要层次。',origin:'巴洛克 · 卡拉瓦乔的方向光与明暗关系',guidance:'尝试侧光与较暗的背景；现场没有方向光时，单纯压暗无法替代布光。',composition:'subject',params:{...DEFAULT_PARAMS,exposure:-.12,contrast:27,saturation:-12,warmth:6,highlights:-20,shadows:-20,vignette:9},css:'contrast(1.22) saturate(.85) brightness(.92)'},
  {id:'mono',name:'昭和后期',en:'SHOWA · PROVOKE',description:'用黑白、颗粒与局部反差，表达对一个瞬间的感受。',origin:'昭和后期 · Provoke 的摄影实践',guidance:'留意街头的动作与张力，模糊和颗粒应服务于你想表达的感觉。',composition:'lines',params:{...DEFAULT_PARAMS,contrast:23,saturation:-100,highlights:-10,shadows:-7,grain:20},css:'grayscale(1) contrast(1.23)'},
- {id:'geometry',name:'新视觉',en:'NEW VISION',description:'让线条、重复结构和空间关系成为画面的重点。',origin:'新视觉摄影 · 莫霍利-纳吉等人的实验',guidance:'沿建筑边缘寻找线条，尝试改变机位。选择 AI 构图可继续查看引导。',composition:'lines',params:{...DEFAULT_PARAMS,contrast:16,saturation:-30,highlights:-12,shadows:-4},css:'saturate(.65) contrast(1.13)'}
+ {id:'geometry',name:'新视觉',en:'NEW VISION',description:'让线条、重复结构和空间关系成为画面的重点。',origin:'新视觉摄影 · 莫霍利-纳吉等人的实验',guidance:'强调形状与明暗关系，保留有节奏的重复结构。',composition:'lines',params:{...DEFAULT_PARAMS,contrast:16,saturation:-30,highlights:-12,shadows:-4},css:'saturate(.65) contrast(1.13)'}
 ];
 export const STARTER_RECIPE_IDS = ['coast','forest','film','geometry','daylight','mono'];
 export const clamp = (n,min,max) => Math.min(max,Math.max(min,n));

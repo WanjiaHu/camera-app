@@ -1,129 +1,200 @@
-import { PRESETS } from './core.js';
-import { REFERENCES, recommendationFor, recordFromCapture } from './experience-model.js';
-export { REFERENCES, recommendationFor } from './experience-model.js';
+import { enableCardLongPress } from './camera-interactions.js';
+import { EXAMPLES, describeFingerprint, matchEffect, readFingerprint } from './experience-model.js';
 
-const STORE = 'black-pic-v2-personal-style';
-export function createPersonalStyle({getScene,getView,getMedia=()=>[],onChoose,toast,database,icon,onChange}) {
+const STORE='black-pic-v2-personal-style';
+
+export function createPersonalStyle({toast,database,icon}){
   const $=selector=>document.querySelector(selector);
   const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  let selected=[],history=[],revision=0,imported=[],storageOK=true,editing=false,picked=new Set(),demoHidden=null;
-  const valid=id=>REFERENCES.some(r=>r.id===id);
-  const example=record=>record.source==='demo-upload'&&record.status==='example'?REFERENCES.find(r=>r.id===record.referenceId):null;
-  const visibleSelected=()=>selected.filter(id=>!demoHidden?.references.includes(id));
-  const visibleImports=()=>imported.filter(r=>!demoHidden?.imports.includes(r.id));
-  const activeHistory=()=>demoHidden?history.filter(r=>r.at>demoHidden.before):history;
-  const availableReferences=()=>[...new Set([...visibleSelected(),...visibleImports().map(example).filter(Boolean).map(r=>r.id)])];
-  function items(){
-    const uploads=visibleImports().map(r=>({key:'upload:'+r.id,name:r.name,image:r.thumbnail,referenceId:example(r)?.id,pending:!example(r)}));
-    const ids=new Set(uploads.map(r=>r.referenceId));
-    return [...uploads,...visibleSelected().filter(id=>!ids.has(id)).map(id=>{const r=REFERENCES.find(x=>x.id===id);return {key:'reference:'+id,name:r.name,image:r.image,referenceId:id,filter:r.native?'none':PRESETS.find(p=>p.id===r.recipe).css};})];
-  }
+  let uploads=[],liked=new Set(),hidden=null,editing=false,picked=new Set(),storageOK=true,deleting=false,uploading=false;
+
   try{
     const saved=JSON.parse(localStorage.getItem(STORE)||'null');
-    if([1,2].includes(saved?.version)){
-      selected=Array.isArray(saved.selected)?[...new Set(saved.selected.filter(valid))]:[];
-      history=Array.isArray(saved.history)?saved.history.filter(r=>r&&['sea','street'].includes(r.scene)&&PRESETS.some(p=>p.id===r.recipe)).slice(-50):[];
-      revision=Number.isInteger(saved.revision)&&saved.revision>=0?saved.revision:0;
-      if(Array.isArray(saved.demoHidden?.imports)&&Array.isArray(saved.demoHidden?.references)&&Number.isFinite(saved.demoHidden?.before))demoHidden=saved.demoHidden;
-    }else{
-      const old=JSON.parse(localStorage.getItem('black-pic-v2-concept-1')||'null');
-      const id={calm:'sea-soft',color:'sea-clear',mono:'sea-mono'}[old?.preference];
-      if(id)selected.push(id);if(old?.interest)selected.push('street-mono');
+    if(saved?.version===3){
+      liked=new Set(EXAMPLES.filter(example=>saved.liked?.includes(example.id)).map(example=>example.id));
+      if(Array.isArray(saved.hidden?.uploads)&&Array.isArray(saved.hidden?.liked))hidden=saved.hidden;
+    }else if(Array.isArray(saved?.demoHidden?.imports)){
+      hidden={uploads:saved.demoHidden.imports,liked:[]};
     }
   }catch{storageOK=false;}
-  function persist(){try{localStorage.setItem(STORE,JSON.stringify({version:2,selected,history,revision,demoHidden}));storageOK=true;}catch{storageOK=false;}}
+
+  function persist(){
+    try{localStorage.setItem(STORE,JSON.stringify({version:3,liked:[...liked],hidden}));storageOK=true;}
+    catch{storageOK=false;}
+  }
+
+  const visibleUploads=()=>uploads.filter(item=>!hidden?.uploads.includes(item.id));
+  const isLiked=id=>liked.has(id)&&!hidden?.liked.includes(id);
+  const exampleById=id=>EXAMPLES.find(item=>item.id===id);
+  const visibleProfiles=visibleUploads;
+
   function render(){
-    const photos=items(),empty=!photos.length;
-    if(empty){editing=false;picked.clear();}
-    const grid=$('#inspiration-grid');grid.dataset.editing=String(editing);grid.classList.toggle('is-empty',empty);
-    grid.innerHTML=empty?`<div class="inspiration-empty"><div class="empty-photo">${icon('gallery')}</div><h2>放进喜欢的照片</h2><p>也可以先用初始滤镜开始拍摄。</p><button class="button primary" data-upload-inspiration>添加照片</button></div>`:photos.map(r=>`<button class="inspiration-photo" data-library-image="${escape(r.key)}" aria-label="${editing?'选择':r.pending?'查看':'按这张拍摄：'}${escape(r.name)}" ${editing?'aria-pressed="'+picked.has(r.key)+'"':''}><img src="${escape(r.image)}" style="filter:${escape(r.filter||'none')}" alt="${escape(r.name)}">${editing?`<span class="photo-check">${picked.has(r.key)?icon('check'):''}</span>`:r.pending?'<span class="photo-pending">待处理</span>':''}</button>`).join('');
-    $('#inspiration-intro').hidden=empty;$('#inspiration-intro').textContent=editing?'选择要移除的照片':'选一张，带到这次拍摄。';
-    $('#inspiration-manage').hidden=empty;$('#inspiration-manage').textContent=editing?'完成':'选择';
-    $('#inspiration-manage').setAttribute('aria-pressed',String(editing));$('#inspiration-upload').hidden=editing;
-    $('#inspiration-return').hidden=!empty;$('#inspiration-delete').hidden=!editing;$('#inspiration-delete').disabled=!picked.size;
+    const photos=visibleUploads();
+    if(!photos.length){editing=false;picked.clear();}
+    $('#inspiration-intro').hidden=!photos.length;
+    $('#example-grid').innerHTML=EXAMPLES.map(item=>
+      `<button class="inspiration-photo" data-example="${item.id}" aria-label="查看示例 ${escape(item.name)}"><img src="${item.image}" alt="${escape(item.name)}"><span class="photo-tag">示例</span>${isLiked(item.id)?`<span class="photo-liked" aria-label="已喜欢" hidden>${icon('heart')}</span>`:''}</button>`
+    ).join('');
+    $('#inspiration-grid').innerHTML=photos.length?photos.map(item=>
+      `<button class="inspiration-photo" data-library-image="${escape(item.id)}"><img src="${escape(item.thumbnail)}" alt="${escape(item.name)}"><span class="photo-check" aria-hidden="true">${icon('check')}</span></button>`
+    ).join(''):`<div class="inspiration-empty"><p>上传几张你喜欢的照片，AI 会学着按你的审美来。</p><button class="button primary" data-upload-inspiration>上传照片</button></div>`;
+    syncSelection();
+    $('#inspiration-storage').textContent=storageOK?'':'浏览器暂时无法保存灵感库设置。';
+    const entry=$('#inspiration-button'),personalized=visibleProfiles().length>0;
+    entry.classList.toggle('has-inspirations',personalized);
+    entry.setAttribute('aria-label',personalized?'打开灵感库，个性化已开启':'打开灵感库');
+    entry.title=personalized?'个性化已开启':'个人灵感库';
+    $('#demo-library-empty').setAttribute('aria-pressed',String(!!hidden));
+    $('#demo-library-sample').setAttribute('aria-pressed',String(!hidden));
+  }
+
+  function syncSelection(){
+    for(const card of $('#inspiration-grid').querySelectorAll('[data-library-image]')){
+      const image=card.querySelector('img');
+      card.setAttribute('aria-label',`${editing?'选择':'查看'} ${image.alt}`);
+      if(editing)card.setAttribute('aria-pressed',String(picked.has(card.dataset.libraryImage)));
+      else card.removeAttribute('aria-pressed');
+    }
+    $('#inspiration-manage').hidden=!editing;
+    $('#inspiration-manage').textContent=editing?'完成':'选择';
+    $('#inspiration-manage').setAttribute('aria-pressed',String(editing));
+    $('#inspiration-manage').disabled=deleting;
+    $('#inspiration-upload').hidden=editing||!visibleUploads().length;
+    $('#inspiration-delete').hidden=!editing;
+    $('#inspiration-delete').disabled=!picked.size||deleting;
     $('#inspiration-delete').textContent=picked.size?`删除 ${picked.size} 张`:'删除';
-    $('#inspiration-storage').textContent=storageOK?'':'本次选择暂未保存，刷新后可能丢失。';
-    $('.inspiration-footer').hidden=!empty&&!editing&&storageOK;
-    $('#inspiration-button').classList.toggle('has-inspirations',!empty);
-    $('#demo-library-empty').setAttribute('aria-pressed',String(empty));
-    $('#demo-library-sample').setAttribute('aria-pressed',String(!empty));
+    $('.inspiration-footer').hidden=!editing&&storageOK;
   }
-  async function removePicked(){
-    const oldReferences=availableReferences();let removed=0;
-    $('#inspiration-delete').disabled=true;
+
+  enableCardLongPress($('#inspiration-grid'),'[data-library-image]',card=>{
+    editing=true;picked.add(card.dataset.libraryImage);syncSelection();
+  },()=>!editing&&!deleting);
+
+  function showDetail(item,example){
+    const title=escape(item.name);
+    $('#inspiration-detail').innerHTML=`<div class="dialog-heading"><h2 id="inspiration-detail-title">${title}</h2><button class="icon-button" data-close="inspiration-dialog" aria-label="关闭图片详情">${icon('close')}</button></div>
+      <img class="media-detail-image" src="${escape(example?item.image:item.thumbnail)}" alt="${title}">
+      <p class="media-detail-meta" hidden>${describeFingerprint(item.fingerprint)}</p>
+      <div class="media-actions" hidden>${example
+        ?`<button class="button subtle" data-like-example="${item.id}" aria-pressed="${isLiked(item.id)}">${icon('heart')}${isLiked(item.id)?'已喜欢':'喜欢'}</button>`
+        :`<button class="button subtle" data-remove-upload="${escape(item.id)}">${icon('trash')}删除图片</button>`}</div>`;
+    const dialog=$('#inspiration-dialog');
+    if(!dialog.open)dialog.showModal();
+  }
+
+  async function removeUploads(ids){
+    if(deleting||!ids.length)return;
+    deleting=true;
+    syncSelection();
     try{
-      for(const key of [...picked]){
-        if(key.startsWith('upload:')){
-          const id=key.slice(7),ref=example(imported.find(r=>r.id===id)||{});
-          await database('inspirations','delete',id);imported=imported.filter(r=>r.id!==id);
-          if(ref)selected=selected.filter(id=>id!==ref.id);
-        }else selected=selected.filter(id=>id!==key.slice(10));
-        picked.delete(key);removed++;
-      }
+      await database('inspirations','deleteMany',ids);
+      uploads=uploads.filter(item=>!ids.includes(item.id));
+      ids.forEach(id=>picked.delete(id));
       editing=false;
+      $('#inspiration-dialog').close();
+      toast(`已删除 ${ids.length} 张照片`);
     }catch(error){toast(error.message);}
-    if(removed){
-      const remaining=new Set(availableReferences()),deleted=oldReferences.filter(id=>!remaining.has(id));
-      history=history.filter(r=>!r.references?.some(id=>deleted.includes(id)));revision++;persist();
-      toast(`已移除 ${removed} 张照片`);
+    finally{
+      deleting=false;
+      render();
     }
-    render();onChange();
   }
+
   document.addEventListener('click',event=>{
-    const b=event.target.closest('button');if(!b)return;
-    if(b.dataset.libraryImage){
-      const item=items().find(r=>r.key===b.dataset.libraryImage);if(!item)return;
-      if(editing){picked.has(item.key)?picked.delete(item.key):picked.add(item.key);render();}
-      else if(item.referenceId)onChoose(item.referenceId);
-      else toast('图片已收录，暂时还不能用于拍摄');
+    const button=event.target.closest('button');
+    if(!button||button.closest('[hidden]'))return;
+    if(button.dataset.example){
+      const item=exampleById(button.dataset.example);
+      if(item)showDetail(item,true);
     }
-    if(b.id==='inspiration-manage'){editing=!editing;picked.clear();render();}
-    if(b.id==='inspiration-delete')void removePicked();
-    if(b.id==='inspiration-upload'||b.hasAttribute('data-upload-inspiration'))$('#inspiration-input').click();
+    if(button.dataset.likeExample){
+      const item=exampleById(button.dataset.likeExample);
+      if(!item)return;
+      if(isLiked(item.id))liked.delete(item.id);
+      else liked.add(item.id);
+      if(hidden)hidden.liked=hidden.liked.filter(id=>id!==item.id);
+      persist();render();showDetail(item,true);
+      $('#inspiration-detail [data-like-example]').focus();
+    }
+    if(button.dataset.libraryImage){
+      const item=visibleUploads().find(item=>item.id===button.dataset.libraryImage);
+      if(!item)return;
+      if(editing){
+        if(deleting)return;
+        if(picked.has(item.id))picked.delete(item.id);else picked.add(item.id);
+        syncSelection();
+      }else showDetail(item,false);
+    }
+    if(button.dataset.removeUpload&&visibleUploads().some(item=>item.id===button.dataset.removeUpload)){
+      if(button.dataset.confirm){
+        button.disabled=true;
+        void removeUploads([button.dataset.removeUpload]).finally(()=>button.disabled=false);
+      }else{
+        button.dataset.confirm='true';
+        button.textContent='确认删除';
+      }
+    }
+    if(button.id==='inspiration-manage'){editing=!editing;picked.clear();syncSelection();}
+    if(button.id==='inspiration-delete')void removeUploads([...picked]);
+    if(button.id==='inspiration-upload'||button.hasAttribute('data-upload-inspiration'))$('#inspiration-input').click();
   });
+
   $('#inspiration-input').addEventListener('change',async event=>{
-    const files=[...event.target.files];event.target.value='';if(!files.length)return;
+    const files=[...event.target.files];event.target.value='';
+    if(!files.length||uploading)return;
+    uploading=true;
     let added=0;
-    for(const file of files){
-      if(!file.type.startsWith('image/')||file.size>20000000){toast('请选择 20 MB 以内的图片');continue;}
-      const url=URL.createObjectURL(file);
-      try{
-        const image=new Image();image.src=url;await image.decode();
-        const scale=Math.min(1,720/Math.max(image.naturalWidth,image.naturalHeight)),canvas=document.createElement('canvas');
-        canvas.width=Math.round(image.naturalWidth*scale);canvas.height=Math.round(image.naturalHeight*scale);canvas.getContext('2d').drawImage(image,0,0,canvas.width,canvas.height);
-        const record={id:crypto.randomUUID(),name:file.name,thumbnail:canvas.toDataURL('image/jpeg',.85),created:Date.now(),status:'pending'};
-        await database('inspirations','put',record);imported.unshift(record);added++;
-      }catch(error){toast(error.message||'图片未能加入，请换一张重试');}finally{URL.revokeObjectURL(url);}
+    try{
+      for(const file of files){
+        if(!file.type.startsWith('image/')||file.size>20000000){toast('请选择 20 MB 以内的图片');continue;}
+        const url=URL.createObjectURL(file);
+        try{
+          const image=new Image();image.src=url;await image.decode();
+          const scale=Math.min(1,720/Math.max(image.naturalWidth,image.naturalHeight));
+          const canvas=document.createElement('canvas');
+          canvas.width=Math.max(1,Math.round(image.naturalWidth*scale));
+          canvas.height=Math.max(1,Math.round(image.naturalHeight*scale));
+          canvas.getContext('2d').drawImage(image,0,0,canvas.width,canvas.height);
+          const record={id:crypto.randomUUID(),name:file.name,thumbnail:canvas.toDataURL('image/jpeg',.85),
+            created:Date.now(),fingerprint:readFingerprint(image)};
+          await database('inspirations','put',record);uploads.unshift(record);added++;
+        }catch(error){toast(error.message||'图片未能加入，请换一张重试。');}
+        finally{URL.revokeObjectURL(url);}
+      }
+    }finally{
+      uploading=false;editing=false;picked.clear();render();
+      if(added)toast(`已加入 ${added} 张照片`);
     }
-    editing=false;picked.clear();render();onChange();if(added)toast(`已加入 ${added} 张照片`);
   });
+
   return {
     render,
     open(){editing=false;picked.clear();render();},
     startEmptyDemo(){
-      // Hide the previous session for presentation without deleting photos or choices.
-      demoHidden={imports:imported.map(r=>r.id),references:[...selected],before:Date.now()};
-      editing=false;picked.clear();revision++;persist();render();onChange();
-    },
-    async loadDemoUploads({restart=false}={}){
-      // Presentation fixture only; arbitrary uploads do not receive these predefined features.
-      const created=Date.now();let added=0;
-      for(const [index,referenceId] of ['sea-open','sea-soft'].entries()){
-        const id='demo-upload-'+referenceId;if(imported.some(r=>r.id===id))continue;
-        const ref=REFERENCES.find(r=>r.id===referenceId),record={id,referenceId,name:ref.name,thumbnail:ref.image,created:created-index,source:'demo-upload',status:'example'};
-        await database('inspirations','put',record);imported.push(record);added++;
-      }
-      imported.sort((a,b)=>b.created-a.created);
-      if(added||demoHidden||restart){demoHidden=restart?{imports:[],references:[],before:Date.now()}:null;revision++;persist();}editing=false;picked.clear();render();onChange();
-    },
-    async load(){
-      try{imported=(await database('inspirations','getAll')).sort((a,b)=>b.created-a.created);}catch{}
-      history=history.map(r=>{const photo=getMedia().find(m=>m.created===r.at);return photo?{...recordFromCapture(photo),...r,id:photo.id}:{...r,id:r.id||String(r.at)};});
+      hidden={uploads:uploads.map(item=>item.id),liked:[...liked]};
+      $('#inspiration-examples').open=false;
       persist();render();
     },
-    recommendation(preferredRecipe=null,context={}){return recommendationFor(getScene(),availableReferences(),activeHistory(),revision,preferredRecipe,context);},
-    hasRelevantHistory(){return activeHistory().some(r=>r.scene===getScene()&&r.references?.length);},
-    remember(record){if(!['sea','street'].includes(record.settings.scene))return;history.push(recordFromCapture(record));history=history.slice(-50);revision++;persist();render();},
-    get count(){return items().length;}
+    restoreDemo(){
+      hidden=null;
+      $('#inspiration-examples').open=true;
+      persist();render();
+    },
+    async load(){
+      try{
+        uploads=(await database('inspirations','getAll')).filter(item=>item.source!=='demo-upload').sort((a,b)=>b.created-a.created);
+        for(const item of uploads){
+          if('fingerprint' in item)continue;
+          try{
+            const image=new Image();image.src=item.thumbnail;await image.decode();
+            item.fingerprint=readFingerprint(image);
+            await database('inspirations','put',item);
+          }catch{storageOK=false;}
+        }
+      }catch{storageOK=false;}
+      if(hidden)$('#inspiration-examples').open=false;
+      render();
+    },
+    match(scene,current){return matchEffect(scene,current,visibleProfiles());}
   };
 }

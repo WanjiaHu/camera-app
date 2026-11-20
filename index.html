@@ -17,7 +17,6 @@
     <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
     <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V3m-5 5l5-5 5 5M4 15v5h16v-5"/></symbol>
     <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v13m-5-5l5 5 5-5M4 16v5h16v-5"/></symbol>
-    <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18m6-18v18M3 9h18M3 15h18"/></symbol>
     <symbol id="i-flip" viewBox="0 0 24 24"><path d="M20 9a8 8 0 0 0-14-4L3 8m0-5v5h5M4 15a8 8 0 0 0 14 4l3-3m0 5v-5h-5"/></symbol>
     <symbol id="i-compare" viewBox="0 0 24 24"><path d="M12 2v20M9 5H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h4m6-14h4a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-4"/></symbol>
     <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12l4 4L19 6"/></symbol>
@@ -42,25 +41,29 @@
   <div class="phone-frame" aria-label="Black PIC 手机 App 演示">
     <div class="phone-screen" data-view="camera">
       <div class="status-bar" aria-hidden="true"><span>9:41</span><i class="dynamic-island"></i><span class="status-icons"><svg viewBox="0 0 38 16"><path d="M1 12V10M5 12V7M9 12V4M13 12V1" stroke-width="2.5"/><path d="M19 5q7-6 14 0m-11 3q4-4 8 0m-5 3q1-1 2 0"/></svg><span class="battery"></span></span></div>
-      <header class="camera-toolbar"><div class="camera-header-start"><button class="icon-button" id="about-button" aria-label="更多选项"><svg><use href="#i-more"/></svg></button><button class="icon-button" id="inspiration-button" data-view="inspiration" aria-label="打开灵感库" title="个人灵感库"><svg><use href="#i-heart"/></svg><span>灵感</span></button></div><a class="brand" href="#camera" aria-label="Black PIC 相机首页">Black PIC<span>CAMERA</span></a><div class="camera-header-actions"><button class="adjust-entry" id="adjust-toggle" aria-label="打开调节" aria-expanded="false" aria-controls="inspector"><svg><use href="#i-sliders"/></svg><span>调节</span></button></div></header>
-      <header class="page-header"><button class="icon-button" data-view="camera" aria-label="返回拍摄"><svg><use href="#i-back"/></svg></button><h1 id="page-title">配方库</h1><span id="header-count"></span><div class="inspiration-header-actions"><button id="inspiration-manage" class="text-button" hidden>选择</button><button class="icon-button" id="inspiration-upload" aria-label="添加灵感图片"><svg><use href="#i-plus"/></svg></button></div></header>
+      <header class="camera-toolbar">
+        <div class="camera-header-start"><button class="icon-button" id="about-button" aria-label="相机设置"><svg><use href="#i-more"/></svg></button></div>
+        <a class="brand" href="#camera" aria-label="Black PIC 相机首页">Black PIC<span>CAMERA</span></a>
+        <div class="camera-header-actions"><button id="flip-camera" class="icon-button flip-camera" aria-label="切换摄像头或示例画面"><svg><use href="#i-flip"/></svg></button><button class="adjust-entry" id="adjust-toggle" aria-label="打开调节" aria-expanded="false" aria-controls="inspector"><svg><use href="#i-sliders"/></svg><span>调节</span></button></div>
+      </header>
+      <header class="page-header"><button class="icon-button" data-view="camera" aria-label="返回相机"><svg><use href="#i-back"/></svg></button><h1 id="page-title">配方库</h1><span id="header-count"></span><button id="gallery-done" class="text-button" hidden>完成</button><div class="inspiration-header-actions"><button id="inspiration-manage" class="text-button" hidden>选择</button><button class="icon-button" id="inspiration-upload" aria-label="添加灵感图片"><svg><use href="#i-plus"/></svg></button></div></header>
       <main class="main">
         <section id="camera-view" class="view active" aria-label="相机">
           <div class="viewfinder" id="viewfinder">
-            <canvas id="preview" width="900" height="1200" aria-label="相机取景画面，点击选择对焦位置"></canvas><div class="view-shade"></div>
-            <button id="live-toggle" class="live-toggle" aria-label="Live 动态照片" aria-pressed="false" title="开启 Live"><svg><use href="#i-live"/><path class="live-slash" d="M4 4l16 16"/></svg></button>
-            <div class="grid-overlay" id="grid-overlay" hidden><i></i><i></i><i></i><i></i></div>
-            <div class="recording-badge" id="recording-badge" hidden><i></i><span>00:00</span></div><span class="original-badge" id="original-badge" hidden>应用前</span><div class="focus-ring" id="focus-ring" hidden></div>
-            <button id="ai-help" class="ai-help" aria-label="AI 拍摄辅助"><svg><use href="#i-spark"/></svg><span>AI</span></button>
-            <button id="compare-button" class="compare-toggle" aria-label="切换应用前后" aria-pressed="false"><svg><use href="#i-compare"/></svg><span>对比</span></button>
+            <canvas id="preview" width="900" height="1200" aria-label="相机取景画面"></canvas><div class="view-shade"></div>
+            <aside id="viewfinder-inspiration-hint" class="viewfinder-inspiration-hint" aria-label="灵感库提示" hidden>
+              <button type="button" data-view="inspiration">上传喜欢的照片，让 AI 更懂你</button>
+              <button type="button" id="dismiss-inspiration-hint" aria-label="关闭灵感提示"><svg aria-hidden="true"><use href="#i-close"/></svg></button>
+            </aside>
+            <button id="live-toggle" class="live-toggle" hidden aria-label="Live 动态照片" aria-pressed="false" title="开启 Live"><svg><use href="#i-live"/><path class="live-slash" d="M4 4l16 16"/></svg></button>
+            <div class="recording-badge" id="recording-badge" hidden><i></i><span>00:00</span></div><span class="original-badge" id="original-badge" hidden>原片</span><div class="focus-ring" id="focus-ring" hidden></div>
+            <button id="ai-help" class="ai-help" aria-label="AI 拍摄" disabled><svg><use href="#i-spark"/></svg><span>AI</span></button>
+            <button id="compare-button" class="compare-toggle" type="button" aria-label="对比原片" title="切换原片与当前效果" aria-pressed="false"><svg><use href="#i-compare"/></svg><span>对比</span></button>
             <div class="zoom-controls"><button id="zoom-button" aria-label="变焦，长按打开轮盘" aria-expanded="false" aria-controls="zoom-popover" title="长按打开变焦轮盘"><span>1×</span><i></i></button>
               <div id="zoom-popover" class="zoom-popover" hidden><div id="zoom-dial" class="zoom-dial" role="slider" aria-label="变焦轮盘" aria-valuemin="1" aria-valuemax="5" aria-valuenow="1" tabindex="0"><svg viewBox="0 0 200 120" aria-hidden="true"><path class="zoom-arc" d="M 18.21 73.42 A 86 86 0 0 1 181.79 73.42"/><g id="zoom-ticks"></g><g id="zoom-needle"><path d="M 0 -91 L -2.5 -96 L 2.5 -96 Z"/><line y1="-85" y2="-73"/></g></svg></div></div>
             </div>
-            <div id="ai-flow" class="ai-flow" hidden>
-              <div class="ai-flow-header"><button id="ai-change-reference" class="assist-source" hidden><img id="ai-source-image" alt=""><span id="ai-source-name"></span><svg><use href="#i-chevron"/></svg></button><button id="ai-cancel" class="flow-icon" aria-label="取消这次效果"><svg><use href="#i-close"/></svg></button></div>
-              <div id="ai-framing-guide" class="ai-framing-guide" aria-hidden="true" hidden><i></i><i></i><i></i><i></i></div>
-              <section id="ai-assist" class="ai-assist"><div class="ai-assist-heading"><span class="ai-assist-label"><svg><use href="#i-spark"/></svg><span id="ai-stage-label">场景</span></span><button id="ai-back" class="ai-step-back" hidden>调整构图</button></div><div class="ai-assist-content"><p id="ai-status" role="status" aria-live="polite"></p><button id="ai-next" class="ai-step-next" hidden>看滤镜 <svg><use href="#i-chevron"/></svg></button></div><div id="ai-filter-options" class="ai-filter-options" role="group" aria-label="选择滤镜" hidden></div><div id="ai-result-actions" class="ai-result-actions" hidden><button id="ai-more-filters" class="ai-step-back" aria-expanded="false" aria-controls="ai-filter-options">换个效果</button><span id="ai-ready-hint" class="ai-ready-hint">按快门拍摄</span></div></section>
-            </div>
+            <div id="ai-flow" class="ai-flow" data-phase="idle" hidden><svg aria-hidden="true"><use href="#i-spark"/></svg><span id="ai-status" role="status"></span></div>
+            <div id="preview-error" class="preview-error" hidden><p role="alert"></p><button id="retry-preview" class="button subtle">恢复取景</button></div>
             <aside class="pro-editor" id="inspector" aria-label="配方与参数调节" aria-hidden="true" data-panel="recipes" inert>
               <div id="editor-session" class="editor-session" hidden><button id="edit-cancel" aria-label="取消配方编辑" hidden><svg><use href="#i-close"/></svg></button><button id="reset-adjust" type="button" aria-label="复原本次调整" title="复原本次调整">复原</button><span id="edit-title"></span><button id="edit-save">存为配方</button></div>
               <div class="recipe-summary" id="recipe-summary"><span id="recipe-summary-label">基础配方</span><button id="style-info" aria-label="查看当前风格的灵感来源"><span id="current-style-name">文艺复兴</span><svg><use href="#i-info"/></svg></button><button class="all-recipes" data-view="recipes" aria-label="查看全部配方">全部 <svg><use href="#i-chevron"/></svg></button></div>
@@ -74,27 +77,40 @@
             <div id="capture-flash" class="capture-flash"></div>
           </div>
           <div class="capture-console">
-            <div class="media-modes" role="group" aria-label="拍摄形式"><button data-mode="video">视频</button><button data-mode="photo" class="active">照片</button></div>
-            <div class="shutter-row"><button class="last-shot" id="last-shot" aria-label="打开作品集"><svg><use href="#i-gallery"/></svg></button><button id="shutter" class="shutter" aria-label="拍摄照片"><span></span></button><button id="flip-camera" class="flip-camera" aria-label="切换摄像头或示例画面"><svg><use href="#i-flip"/></svg></button></div>
+            <div class="capture-mode-row">
+              <div class="media-modes" role="group" aria-label="拍摄形式"><button type="button" data-mode="photo" class="active" aria-pressed="true">照片</button><button type="button" data-mode="video" aria-pressed="false">视频</button><button type="button" data-mode="live" aria-pressed="false">Live</button></div>
+              <button id="effects-toggle" type="button" class="adjust-entry effects-entry" aria-label="换效果" aria-expanded="false" aria-controls="inspector"><span>换效果</span></button>
+            </div>
+            <p id="result-label" hidden></p>
+            <div class="shutter-row"><button class="last-shot" id="last-shot" aria-label="打开作品集"><svg><use href="#i-gallery"/></svg></button><button id="shutter" class="shutter" disabled aria-label="拍摄照片"><span></span></button><button id="exit-result" class="button subtle" hidden>退出预览</button><button id="inspiration-button" class="capture-inspiration" data-view="inspiration" aria-label="打开灵感库" title="个人灵感库"><svg aria-hidden="true"><use href="#i-heart"/></svg><span>灵感</span></button></div>
           </div>
 
         </section>
-        <section id="inspiration-view" class="view" aria-label="个人灵感库" hidden><p class="inspiration-intro" id="inspiration-intro">选一张，带到这次拍摄。</p><div class="inspiration-grid" id="inspiration-grid"></div><div class="inspiration-footer" hidden><p id="inspiration-storage" role="status"></p><button id="inspiration-return" class="button subtle">先用初始滤镜</button><button id="inspiration-delete" class="button subtle" hidden disabled>删除</button></div></section>
+        <section id="inspiration-view" class="view" aria-label="个人灵感库" hidden>
+          <p id="inspiration-intro" class="inspiration-intro">上传你喜欢的照片，AI 会用它们为相似场景选影调。</p>
+          <div class="inspiration-scroll">
+            <details id="inspiration-examples" open><summary>内置示例</summary><p>示例仅供参考。</p><div class="inspiration-grid" id="example-grid"></div></details>
+            <section aria-labelledby="uploads-title"><h2 id="uploads-title">我的上传</h2><div class="inspiration-grid" id="inspiration-grid"></div></section>
+          </div>
+          <div class="inspiration-footer" hidden><p id="inspiration-storage" role="status"></p><button id="inspiration-delete" class="button subtle" hidden disabled>删除</button></div>
+        </section>
         <section id="recipes-view" class="view" aria-label="配方库" hidden><div class="library-toolbar"><div class="library-filters"><button data-library="all" class="active">全部</button><button data-library="mine">自定</button><button data-library="favorites">收藏</button></div><button class="icon-button" id="library-save" aria-label="保存当前配方"><svg><use href="#i-plus"/></svg></button></div><div class="library-grid" id="library-grid"></div></section>
-        <section id="gallery-view" class="view" aria-label="作品集" hidden><div class="gallery-top"><span id="gallery-summary">暂无作品</span></div><div class="gallery-grid" id="gallery-grid"></div></section>
+        <section id="gallery-view" class="view" aria-label="作品集" hidden><div class="gallery-top"><span id="gallery-summary">暂无作品</span></div><div class="gallery-grid" id="gallery-grid"></div><div id="gallery-selection" class="inspiration-footer" hidden><button id="gallery-delete" class="button subtle" disabled>删除</button></div></section>
       </main>
 
       <div class="home-indicator" aria-hidden="true"></div><div id="toast" class="toast" role="status" aria-live="polite"></div>
       <dialog id="save-dialog" class="modal"><form id="save-form"><div class="dialog-heading"><h2 id="save-title">保存配方</h2><button type="button" class="icon-button" data-close="save-dialog" aria-label="关闭"><svg><use href="#i-close"/></svg></button></div><div class="save-preview"><img id="save-thumbnail" alt="当前配方预览"><div><span id="save-base-name"></span><small id="save-settings-summary"></small></div></div><label class="field-label" for="recipe-name">名称</label><input id="recipe-name" name="name" maxlength="24" placeholder="给配方起个名字" required autocomplete="off"><details class="optional-note"><summary>添加备注</summary><textarea id="recipe-note" aria-label="配方备注" maxlength="120" rows="2" placeholder="适用场景或使用心得"></textarea></details><label class="checkbox-label"><input type="checkbox" id="save-capture-settings">包含专业参数</label><label class="checkbox-label" id="save-copy-option" hidden><input type="checkbox" id="save-copy">另存为新配方</label><div class="dialog-actions"><button type="button" class="button subtle" data-close="save-dialog">取消</button><button type="submit" id="save-submit" class="button primary">保存</button></div></form></dialog>
       <dialog id="media-dialog" class="modal media-modal"><div id="media-detail"></div></dialog>
+      <dialog id="inspiration-dialog" class="modal media-modal" aria-labelledby="inspiration-detail-title"><div id="inspiration-detail"></div></dialog>
       <dialog id="about-dialog" class="modal options-modal">
         <div class="dialog-heading"><h2>相机设置</h2><button class="icon-button" data-close="about-dialog" aria-label="关闭"><svg><use href="#i-close"/></svg></button></div>
         <button class="option-row" id="connect-camera" aria-label="连接或断开相机"><svg><use href="#i-camera"/></svg><span>使用摄像头</span><svg><use href="#i-chevron"/></svg></button>
-        <div class="more-camera-tools"><button id="aspect-button" class="camera-tool" aria-label="切换画幅比例">全屏</button><button id="grid-button" class="camera-tool" aria-label="显示构图网格" aria-pressed="false"><svg><use href="#i-grid"/></svg></button></div>
+        <button class="option-row" id="import-media"><svg><use href="#i-upload"/></svg><span>导入取景画面</span><svg><use href="#i-chevron"/></svg></button>
+        <div class="more-camera-tools" hidden><button id="aspect-button" class="camera-tool" hidden aria-label="切换画幅比例">全屏</button></div>
         <section class="demo-library-settings" aria-labelledby="demo-library-title">
           <h3 id="demo-library-title">演示起点</h3>
-          <div class="demo-library-options" role="group" aria-label="切换灵感库演示状态"><button id="demo-library-empty" aria-pressed="true">空灵感库</button><button id="demo-library-sample" aria-pressed="false">已有图片</button></div>
-          <p>切换后打开灵感库，已上传的图片和作品会保留。</p>
+          <div class="demo-library-options" role="group" aria-label="切换灵感库演示状态"><button id="demo-library-empty" aria-pressed="true">空灵感库</button><button id="demo-library-sample" aria-pressed="false">恢复灵感库</button></div>
+          <p>切换后打开灵感库，空灵感库会暂时隐藏上传的照片与对应指纹。</p>
         </section>
       </dialog>
       <dialog id="style-dialog" class="modal"><div class="dialog-heading"><h2 id="style-title"></h2><button class="icon-button" data-close="style-dialog" aria-label="关闭配方说明"><svg><use href="#i-close"/></svg></button></div><p id="style-origin" class="style-origin"></p><p id="style-description" class="style-description"></p><p id="style-guidance" class="style-guidance"></p><p class="style-boundary">这是一组摄影表达的起点，现场光线与取景同样重要。</p></dialog>
